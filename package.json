@@ -1,0 +1,14 @@
+{
+  "name": "snapcatchat",
+  "description": "does some mad shit with snapchat and cats yo",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zaccolley/snapcatchat.git"
+  },
+  "dependencies": {
+    "gm": "^1.16.0",
+    "opencv": "^0.5.0",
+    "q": "^1.0.1",
+    "snapchat": "^1.0.6"
+  }
+}
