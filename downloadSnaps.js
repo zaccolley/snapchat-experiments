@@ -1,82 +1,70 @@
 var snapchat = require('snapchat'),
-    client = new snapchat.Client(),
-    fs = require('fs'),
-    cv = require('opencv'),
-    assert = require('assert')
-    fs =require('fs'),
-    exec = require('child_process').exec;
+	client = new snapchat.Client(),
+
+	replaceFace = require('./replaceFace.js'),
+	sendSnap = require('./sendSnap.js'),
+
+	fs = require('fs');
 
 // Make sure the images folder exists
 if(!fs.existsSync('./images')) {
-    fs.mkdirSync('./images');
+	fs.mkdirSync('./images');
 }
 
-client.login('hacksotontest1', 'snaptest1').then(function(data) {
-    // Handle any problems, such as wrong password
-    if (typeof data.snaps === 'undefined') {
-        console.log(data);
-        return;
-    }
+client.login('hacksotontest1', 'snaptest1').then(function(data){
+	// Handle any problems, such as wrong password
+	if(typeof data.snaps === 'undefined'){
+		console.log(data);
+		return;
+	}
 
-    // console.log(data);
+	if(!data.snaps.length) return console.log("No snaps!");
 
-    // Loop through the latest snaps
-    data.snaps.forEach(function(snap) {
-        // Make sure the snap item is unopened and sent to you (not sent by you)
-        if (typeof snap.sn !== 'undefined' && typeof snap.t !== 'undefined' && snap.st == 1) {
-            console.log('Saving snap from ' + snap.sn + '...');
+	var newSnaps = [];
 
-            // Save the image to ./images/{SENDER USERNAME}_{SNAP ID}.jpg
-            var imgPath = './images/' + snap.sn + '_' + snap.id + '.jpg';
-            var stream = fs.createWriteStream(imgPath, { flags: 'w', encoding: null, mode: 0666 });
+	data.snaps.forEach(function(element, index, array){
+	  
+	  var found = false;
+	  var newId = element.sn;
+	  
+	  newSnaps.forEach(function(element, index, array){
+	    if(element.sn === newId) found = true;
+	  });
+	  
+	  if(!found){
+	    newSnaps.push(element);  
+	  }
+	    
+	});
 
-            client.getBlob(snap.id).then(function(blob) {
-                console.log(blob);
-                blob.pipe(stream);
-                blob.resume();
-            });
+	// Loop through the latest snaps
+	newSnaps.forEach(function(snap) {
+		// Make sure the snap item is unopened and sent to you (not sent by you)
+		if (typeof snap.sn !== 'undefined' && typeof snap.t !== 'undefined'
+				&& snap.st == 1 && typeof snap.timer !== 'undefined' && typeof snap.zipped == 'undefined'
+				&& typeof snap.rp == 'undefined'){
+			console.log('Saving snap from ' + snap.sn + '...');
 
-            stream.on('finish', function() {
-                console.log("end of stream");
-                console.log(cv.version);
+			// Save the image to ./images/{SENDER USERNAME}_{SNAP ID}.jpg
+			// var imgPath = './images/' + snap.sn + '_' + snap.id + '.jpg';
+			var imgPath = './images/' + snap.sn + '.jpg';
+			var stream = fs.createWriteStream(imgPath, { flags: 'w', encoding: null, mode: 0666 });
 
-                var imgPath = stream.path.substring(2);
-                console.log(imgPath);
-                if(imgPath == "images/zaccolley_648811406383816326r.jpg"){
+			client.getBlob(snap.id).then(function(blob){
+				blob.pipe(stream);
+			});
+		
+			stream.on('finish', function(){
+				var outputPath = './images/' + snap.sn +"_cat.jpg";
+				replaceFace(snap.sn, function(){
+					sendSnap(5, outputPath, [snap.sn]);
+				});
+			});
 
-                    cv.readImage(imgPath, function(err, im){
-
-                        im.detectObject("./haarcascade_frontalface_alt.xml", {}, function(err, faces){  
-
-                            var biggestFace = { x: 0, y: 0, width: 0, height: 0 };
-
-                            for (var i=0;i<faces.length; i++){
-                                var face = faces[i];
-                                console.log(face);
-
-                                if( (face.width > biggestFace.width) && (face.height > biggestFace.height) ){
-                                    biggestFace = face;
-                                }
-
-                            }
-
-                            var face = biggestFace;
-                            
-                            var command = "gm composite -geometry +"+face.x+"+"+face.y+" -resize "+face.width+"x"+face.height+" ./images/cat.png "+imgPath+" "+imgPath+".png";
-                            console.log(command);
-                            exec(command);
-
-                        });
-                    });
-
-                }
-                console.error('all writes are now complete.');
-            });
-
-        }
-    });
+		}
+	});
 },
 function(err) {
-    console.error("Failed to login");
-    console.error(err)
+	console.error("Failed to login");
+	console.error(err)
 });
