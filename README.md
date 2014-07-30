@@ -1,6 +1,7 @@
 # some snapchat shit ennet
 
-requires:
+install:
 	
 	+ OpenCV: `sudo apt-get install libopencv-dev`
 	+ GraphicsMagick: `sudo apt-get install graphicsmagick`
+	+ `npm install`
