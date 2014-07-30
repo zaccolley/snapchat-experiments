@@ -65,18 +65,30 @@ function compositeImages(baseImg, overlayImg, outputImg, faces, count, finishedC
 
 		count++; // up the count for the next use
 
-		gm().subCommand('composite')
-			.out('-geometry', '+'+face.x+'+'+face.y) // position of overlayed image
-			.out('-resize', face.width+'x'+face.height) // resize the overlayed image
-			.out(overlayImg, baseImg)
-			.write(outputImg, function(){
-					compositeImages(outputImg, overlayImg, outputImg, faces, count, function(err){
-						if(err) console.log(err); return; // return any errors
+		gm
 
-						finishedCompositingCallback();
-					})
+		
+
+		// creepy swirl of the faces 
+
+		gm(baseImg)
+			.region(face.width, face.height, face.x, face.y)
+			.swirl(150)
+			.write(outputImg, function(err){
+					compositeImages(outputImg, overlayImg, outputImg, faces, count, finishedCompositingCallback);
 				}
 			);
+
+
+
+		// gm().subCommand('composite')
+		// 	.out('-geometry', '+'+face.x+'+'+face.y) // position of overlayed image
+		// 	.out('-resize', face.width+'x'+face.height) // resize the overlayed image
+		// 	.out(overlayImg, baseImg)
+		// 	.write(outputImg, function(err){
+		// 			compositeImages(outputImg, overlayImg, outputImg, faces, count, finishedCompositingCallback);
+		// 		}
+		// 	);
 
 	}
 
