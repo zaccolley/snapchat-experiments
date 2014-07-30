@@ -1,5 +1,6 @@
 var snapchat = require('snapchat'),
 	client = new snapchat.Client(),
+	config = require('./snapchat-config.json'),
 
 	Q = require('q'),
 	fs = require('fs');
@@ -7,7 +8,7 @@ var snapchat = require('snapchat'),
 module.exports = sendSnaps;
 
 function sendSnaps(time, filename, recipients){
-	client.login('hacksotontest1', 'snaptest1').then(function(){
+	client.login(config.username, config.password).then(function(){
 		var blob = fs.createReadStream(filename);
 		return client.upload(blob, false);
 	}, function(err) {

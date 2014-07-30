@@ -1,5 +1,6 @@
 var snapchat = require('snapchat'),
 	client = new snapchat.Client(),
+	config = require('./snapchat-config.json'),
 
 	replaceFace = require('./replaceFace.js'),
 	sendSnap = require('./sendSnap.js'),
@@ -11,7 +12,7 @@ if(!fs.existsSync('./images')) {
 	fs.mkdirSync('./images');
 }
 
-client.login('hacksotontest1', 'snaptest1').then(function(data){
+client.login(config.username, config.password).then(function(data){
 	// Handle any problems, such as wrong password
 	if(typeof data.snaps === 'undefined'){
 		console.log(data);
