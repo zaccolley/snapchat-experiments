@@ -1,3 +1,3 @@
 var sendSnap = require('./sendSnap.js');
 
-sendSnap(5, './images/mona_cat.jpg', ["zaccolley"]);
+sendSnap(5, './images/mona.jpg', ["zaccolley"]);
