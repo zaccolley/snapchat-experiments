@@ -30,7 +30,22 @@ function replaceFace(user, callback){
 
 			var count = 0;
 			compositeImages(baseImg, overlayImg, outputImg, images, count, function(){
-				callback();
+				gm(outputImg).size(function(err, image){
+
+					gm(outputImg)
+						.fill('#00000066')
+	  					.drawRectangle(0, 0, image.width, 70)
+						.fontSize(30)
+						.fill('#f5f5f5')
+						.drawText(0, 50, 'Hi, '+user, 'North')
+						.minify()
+						.write(outputImg, function(err){
+							if(err) return console.dir(arguments);
+
+							callback();
+						});
+
+				});
 			});
 
 		});
