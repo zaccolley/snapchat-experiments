@@ -28,11 +28,8 @@ function replaceFace(user, callback){
 				return;
 			 } 
 
-			var face = getBiggestImage(images);
-			console.log(user+"'s face data: ", face);
-			compositeImages(baseImg, overlayImg, outputImg, face, function(err){
-				if(err) return console.dir(arguments); // return any errors
-				console.log("gm command: ", arguments[3]); // display the command generated
+			var count = 0;
+			compositeImages(baseImg, overlayImg, outputImg, images, count, function(){
 				callback();
 			});
 
@@ -42,13 +39,31 @@ function replaceFace(user, callback){
 }
 
 // composite image over another
-function compositeImages(baseImg, overlayImg, outputImg, overlayImgData, callback){
-	console.log(overlayImgData);
-	gm().subCommand('composite')
-		.out('-geometry', '+'+overlayImgData.x+'+'+overlayImgData.y) // position of overlayed image
-		.out('-resize', overlayImgData.width+'x'+overlayImgData.height) // resize the overlayed image
-		.out(overlayImg, baseImg)
-		.write(outputImg, callback);
+function compositeImages(baseImg, overlayImg, outputImg, faces, count, finishedCompositingCallback){
+	// if end of faces
+	if(count == faces.length){
+		finishedCompositingCallback();
+	}else{
+
+		var face = faces[count];
+		console.log("face data: ", face);
+
+		count++; // up the count for the next use
+
+		gm().subCommand('composite')
+			.out('-geometry', '+'+face.x+'+'+face.y) // position of overlayed image
+			.out('-resize', face.width+'x'+face.height) // resize the overlayed image
+			.out(overlayImg, baseImg)
+			.write(outputImg, function(){
+					compositeImages(outputImg, overlayImg, outputImg, faces, count, function(err){
+						if(err) console.log(err); return; // return any errors
+
+						finishedCompositingCallback();
+					})
+				}
+			);
+
+	}
 
 }
 
