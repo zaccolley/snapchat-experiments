@@ -7,7 +7,7 @@ var snapchat = require('snapchat'),
 
 module.exports = sendSnaps;
 
-function sendSnaps(time, filename, recipients){
+function sendSnaps(time, filename, recipients, callback){
 	client.login(config.username, config.password).then(function(){
 		var blob = fs.createReadStream(filename);
 		return client.upload(blob, false);
@@ -26,8 +26,8 @@ function sendSnaps(time, filename, recipients){
 		console.error("Unable to upload file", filename);
 		console.error(error);
 	})
-	.then(function(statuses) {
-		console.log("All done");
+	.then(function(statuses){
+		callback(statuses);
 	}, function(err) {
 		console.error("There was an error")
 		console.error(err);
